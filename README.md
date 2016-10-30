@@ -9,7 +9,7 @@ Skip the HTML, Bypass takes markdown and renders it directly on Android and iOS.
 
 ## Requirements
 
-If you want to build Bypass you have to meet the following Requirements:
+If you want to build Bypass yourself you have to meet the following Requirements:
 
 - Boost must be [installed on your system](http://www.boost.org/doc/libs/1_53_0/more/getting_started/index.html)
 

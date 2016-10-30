@@ -196,7 +196,7 @@ namespace Bypass {
 	}
 
 	void Parser::parsedTableCell(struct buf *ob, struct buf *text, int flags) {
-		handleSpan(TABLE_CELL, ob, text);
+		handleBlock(TABLE_CELL, ob, text);
 	}
 
 	void Parser::parsedTableRow(struct buf *ob, struct buf *text, int flags) {
