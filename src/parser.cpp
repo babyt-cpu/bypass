@@ -143,51 +143,6 @@ namespace Bypass {
 		bufputs(ob, oss.str().c_str());
 	}
 
-	void Parser::handleTable(Type type, struct buf *ob, struct buf *header_row, struct buf *rows) {
-		Element block;
-		block.setType(type);
-
-		if (header_row) {
-			std::string appendString;
-			std::string textString(header_row->data, header_row->data + header_row->size);
-			std::vector<std::string> strs;
-			boost::split(strs, textString, boost::is_any_of("|"));
-
-			for(vector<std::string>::iterator it = strs.begin(); it != strs.end(); it++) {
-				int pos = atoi((*it).c_str());
-				std::map<int, Element>::iterator elit = elementSoup.find(pos);
-
-				if ( elit != elementSoup.end() ) {
-					appendString.append((*elit).second.getText());
-					elementSoup.erase(pos);
-				}
-			}
-			block.addAttribute("header_row", appendString);
-		}
-
-		if (rows) {
-			std::string rowAppendString;
-			std::string textString(rows->data, rows->data + rows->size);
-			std::vector<std::string> strs;
-			boost::split(strs, textString, boost::is_any_of("|"));
-
-			for(vector<std::string>::iterator it = strs.begin(); it != strs.end(); it++) {
-				int pos = atoi((*it).c_str());
-				std::map<int, Element>::iterator elit = elementSoup.find(pos);
-
-				if ( elit != elementSoup.end() ) {
-					rowAppendString.append((*elit).second.getText());
-					elementSoup.erase(pos);
-				}
-			}
-			block.addAttribute("rows", rowAppendString);
-		}
-
-		elementCount++;
-		elementSoup[elementCount] = block;
-		appendElementMarker(ob);
-	}
-
 	// Block Element Callbacks
 
 	void Parser::handleBlock(Type type, struct buf *ob, struct buf *text, int extra) {
