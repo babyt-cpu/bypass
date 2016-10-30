@@ -48,6 +48,9 @@ namespace Bypass {
 
 		// Block Element Callbacks
 
+		void parsedTable(struct buf *ob, struct buf *header_row, struct buf *rows);
+		void parsedTableCell(struct buf *ob, struct buf *text, int flags);
+		void parsedTableRow(struct buf *ob, struct buf *text, int flags);
 		void parsedBlockCode(struct buf *ob, struct buf *text);
 		void parsedBlockQuote(struct buf *ob, struct buf *text);
 		void parsedHeader(struct buf *ob, struct buf *text, int level);
@@ -79,6 +82,7 @@ namespace Bypass {
 		Document document;
 		std::map<int, Element> elementSoup;
 		int elementCount;
+		void handleTable(Type type, struct buf *ob, struct buf *header_row, struct buf *rows);
 		void handleBlock(Type, struct buf *ob, struct buf *text = NULL, int extra = -1);
 		void handleSpan(Type, struct buf *ob, struct buf *text, struct buf *extra = NULL, struct buf *extra2 = NULL, bool output = true);
 		void handleNontextSpan(Type, struct buf *ob, struct buf *link, struct buf *title = NULL, struct buf *alt = NULL);

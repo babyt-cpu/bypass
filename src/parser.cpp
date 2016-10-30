@@ -20,6 +20,9 @@ using namespace std;
 
 static void rndr_blockcode(struct buf *ob, struct buf *text, void *opaque);
 static void rndr_blockquote(struct buf *ob, struct buf *text, void *opaque);
+static void rndr_table(struct buf *ob, struct buf *head_row, struct buf *rows, void *opaque);
+static void rndr_table_cell(struct buf *ob, struct buf *text, int flags, void *opaque);
+static void rndr_table_row(struct buf *ob, struct buf *cells, int flags, void *opaque);
 static void rndr_header(struct buf *ob, struct buf *text, int level, void *opaque);
 static void rndr_hrule(struct buf *ob, void *opaque);
 static void rndr_list(struct buf *ob, struct buf *text, int flags, void *opaque);
@@ -49,9 +52,9 @@ struct mkd_renderer mkd_callbacks = {
 	rndr_list,            // list
 	rndr_listitem,        // listitem
 	rndr_paragraph,       // paragraph
-	NULL,                 // table
-	NULL,                 // table cell
-	NULL,                 // table row
+	rndr_table,           // table
+	rndr_table_cell,      // table cell
+	rndr_table_row,       // table row
 
 	/* span-level callbacks */
 	rndr_autolink,        // autolink
@@ -140,6 +143,51 @@ namespace Bypass {
 		bufputs(ob, oss.str().c_str());
 	}
 
+	void Parser::handleTable(Type type, struct buf *ob, struct buf *header_row, struct buf *rows) {
+		Element block;
+		block.setType(type);
+
+		if (header_row) {
+			std::string appendString;
+			std::string textString(header_row->data, header_row->data + header_row->size);
+			std::vector<std::string> strs;
+			boost::split(strs, textString, boost::is_any_of("|"));
+
+			for(vector<std::string>::iterator it = strs.begin(); it != strs.end(); it++) {
+				int pos = atoi((*it).c_str());
+				std::map<int, Element>::iterator elit = elementSoup.find(pos);
+
+				if ( elit != elementSoup.end() ) {
+					appendString.append((*elit).second.getText());
+					elementSoup.erase(pos);
+				}
+			}
+			block.addAttribute("header_row", appendString);
+		}
+
+		if (rows) {
+			std::string rowAppendString;
+			std::string textString(rows->data, rows->data + rows->size);
+			std::vector<std::string> strs;
+			boost::split(strs, textString, boost::is_any_of("|"));
+
+			for(vector<std::string>::iterator it = strs.begin(); it != strs.end(); it++) {
+				int pos = atoi((*it).c_str());
+				std::map<int, Element>::iterator elit = elementSoup.find(pos);
+
+				if ( elit != elementSoup.end() ) {
+					rowAppendString.append((*elit).second.getText());
+					elementSoup.erase(pos);
+				}
+			}
+			block.addAttribute("rows", rowAppendString);
+		}
+
+		elementCount++;
+		elementSoup[elementCount] = block;
+		appendElementMarker(ob);
+	}
+
 	// Block Element Callbacks
 
 	void Parser::handleBlock(Type type, struct buf *ob, struct buf *text, int extra) {
@@ -186,6 +234,18 @@ namespace Bypass {
 		bufreset(text);
 		appendElementMarker(text);
 		handleBlock(BLOCK_CODE, ob, text);
+	}
+
+	void Parser::parsedTable(struct buf *ob, struct buf *header_row, struct buf *rows) {
+		handleBlock(TABLE, ob, rows, 0);
+	}
+
+	void Parser::parsedTableCell(struct buf *ob, struct buf *text, int flags) {
+		handleSpan(TABLE_CELL, ob, text);
+	}
+
+	void Parser::parsedTableRow(struct buf *ob, struct buf *text, int flags) {
+		handleBlock(TABLE_ROW, ob, text);
 	}
 
 	void Parser::parsedBlockQuote(struct buf *ob, struct buf *text) {
@@ -377,6 +437,19 @@ namespace Bypass {
 
 static void rndr_blockcode(struct buf *ob, struct buf *text, void *opaque) {
 	((Bypass::Parser*) opaque)->parsedBlockCode(ob, text);
+}
+
+static void rndr_table(struct buf *ob, struct buf *head_row, struct buf *rows,
+					void *opaque) {
+	((Bypass::Parser*) opaque)->parsedTable(ob, head_row, rows);
+}
+
+void rndr_table_cell(struct buf *ob, struct buf *text, int flags, void *opaque) {
+	((Bypass::Parser*) opaque)->parsedTableCell(ob, text, 0);
+}
+
+void rndr_table_row(struct buf *ob, struct buf *text, int flags, void *opaque) {
+	((Bypass::Parser*) opaque)->parsedTableRow(ob, text, 0);
 }
 
 static void rndr_blockquote(struct buf *ob, struct buf *text, void *opaque) {
