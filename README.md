@@ -13,17 +13,7 @@ Skip the HTML, Bypass takes markdown and renders it directly on Android and iOS.
 
 ## Android
 
-If you just want to include Bypass in your Maven project, add the following
-dependency block to your `pom.xml`:
-
-    <dependency>
-        <groupId>in.uncod.android.bypass</groupId>
-        <artifactId>bypass</artifactId>
-        <type>apklib</type>
-        <version>1.1</version>
-    </dependency>
-
-[Building And Using](platform/android/README.md)
+[Using on Android](https://github.com/budsmile/bypass-android)
 
 ### Contributors
 
